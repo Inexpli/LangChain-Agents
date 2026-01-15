@@ -1,25 +1,14 @@
-from langchain_groq import ChatGroq
 from langchain.agents import create_agent
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage, ToolMessage
 from langchain.agents.middleware import HumanInTheLoopMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
-from dotenv import load_dotenv
+import sys
 import os
 
-load_dotenv()
-
-model = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0,
-    api_key=os.getenv("API_KEY"),
-)
-
-# model = ChatOllama(
-#     model="qwen3:30b",
-#     temperature=0,
-# )
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '.')))
+from config import model
 
 @tool
 def read_email() -> str:
@@ -36,8 +25,6 @@ def send_email(recipient: str, subject: str, body: str) -> str:
     """Sends an email to the specified recipient."""
 
     return f"Email sent to {recipient} with subject '{subject}' and body '{body}'"
-
-checkpointer = InMemorySaver()
     
 agent = create_agent(
     model=model,
@@ -47,7 +34,7 @@ agent = create_agent(
             interrupt_on={"send_email": {"allowed_decisions": ["approve", "reject"]}},
         ),
     ],
-    checkpointer=checkpointer,
+    checkpointer=InMemorySaver(),
     system_prompt="You're an AI assistant that helps manage emails and meetings.",
 )
 
