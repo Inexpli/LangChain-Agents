@@ -39,7 +39,7 @@ agent = create_agent(
 )
 
 def get_user_decision(received_email: str, email: str) -> str:
-    """Interactive terminal prompt for approval"""
+    """Interactive terminal prompt for approval."""
     
     print(f"\nLATEST EMAIL IN INBOX:") 
     print(f"\n{received_email}")
@@ -68,33 +68,43 @@ def get_user_decision(received_email: str, email: str) -> str:
             print("Invalid input. Please choose: [a]pprove or [r]eject")
 
 
-prompt = "Please read my latest email and reply."
-config = {"configurable": {"thread_id": "1"}}
+def main():
 
-result = agent.invoke(
-    {"messages": [HumanMessage(content=prompt)]},
-    config=config,
-)
+    prompt = "Please read my latest email and reply."
+    config = {"configurable": {"thread_id": "1"}}
 
-while "__interrupt__" in result:
-    action_request = result['__interrupt__'][-1].value['action_requests'][-1]
-    recipient = action_request['args'].get('recipient', '')
-    subject = action_request['args'].get('subject', '')
-    body = action_request['args'].get('body', '')
-    email = f"To: {recipient}\nSubject: {subject}\n\n{body}"
-    received_email = ""
-    for message in result.get('messages', []):
-        if isinstance(message, ToolMessage) and message.name == 'read_email':
-            received_email = message.content
-            break
-    
-    decision = get_user_decision(received_email, email)
+    print("Starting Email Agent...\n")
 
     result = agent.invoke(
-        Command(resume={"decisions": [{"type": decision}]}),
+        {"messages": [HumanMessage(content=prompt)]},
         config=config,
     )
 
-if result and result["messages"]:
-    print("\n--- Final Result ---")
-    print(result["messages"][-1].content)
+    while "__interrupt__" in result:
+        action_request = result['__interrupt__'][-1].value['action_requests'][-1]
+        recipient = action_request['args'].get('recipient', '')
+        subject = action_request['args'].get('subject', '')
+        body = action_request['args'].get('body', '')
+        email = f"To: {recipient}\nSubject: {subject}\n\n{body}"
+        received_email = ""
+        for message in result.get('messages', []):
+            if isinstance(message, ToolMessage) and message.name == 'read_email':
+                received_email = message.content
+                break
+        
+        decision = get_user_decision(received_email, email)
+
+        result = agent.invoke(
+            Command(resume={"decisions": [{"type": decision}]}),
+            config=config,
+        )
+
+    print("\nEmail Agent finished!")
+
+    if result and result["messages"]:
+        print("\n--- Final Result ---")
+        print(result["messages"][-1].content)
+
+
+if __name__ == "__main__":
+    main()

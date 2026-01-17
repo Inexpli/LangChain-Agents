@@ -23,7 +23,7 @@ class RuntimeContext:
 
 @tool
 def execute_select_query(query: str) -> str:
-    """Execute SELECT queries (read-only)"""
+    """Execute SELECT queries (read-only)."""
     if not query.strip().upper().startswith('SELECT'):
         return "Error: This tool only accepts SELECT queries"
     
@@ -37,7 +37,7 @@ def execute_select_query(query: str) -> str:
 
 @tool
 def execute_write_query(query: str) -> str:
-    """Execute INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, TRUNCATE queries (requires approval)"""
+    """Execute INSERT, UPDATE, DELETE, CREATE, DROP, ALTER, TRUNCATE queries (requires approval)."""
     query_upper = query.strip().upper()
     allowed = any(query_upper.startswith(cmd) for cmd in [
         'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'DROP', 'ALTER', 'TRUNCATE'
@@ -71,7 +71,7 @@ agent = create_agent(
 )
 
 def preview_query_impact(query: str, db: SQLDatabase) -> str:
-    """Preview what the query would affect"""
+    """Preview what the query would affect."""
 
     query_upper = query.strip().upper()
     
@@ -102,7 +102,7 @@ def preview_query_impact(query: str, db: SQLDatabase) -> str:
         return f"Could not generate preview: {str(e)}"
 
 def get_user_decision(query: str, db: SQLDatabase) -> str:
-    """Interactive terminal prompt for approval"""
+    """Interactive terminal prompt for approval."""
     
     print(f"\n{'='*100}")
     print(f"APPROVAL REQUIRED - WRITE OPERATION")
@@ -141,31 +141,37 @@ def get_user_decision(query: str, db: SQLDatabase) -> str:
             print("Invalid input. Please choose: [a]pprove, [r]eject, [v]iew, or [p]review")
 
 
-prompt = "Please provide me with the names of all artists in the database. Then, add a new artist with name 'AI Records'."
-config = {"configurable": {"thread_id": "2"}}
+def main():
 
-print("Starting SQL Agent...\n")
+    prompt = "Please provide me with the names of all artists in the database. Then, add a new artist with name 'AI Records'."
+    config = {"configurable": {"thread_id": "1"}}
 
-result = agent.invoke(
-    {"messages": [HumanMessage(content=prompt)]},
-    context=RuntimeContext(db=db),
-    config=config,
-)
+    print("Starting SQL Agent...\n")
 
-while "__interrupt__" in result:
-    action_request = result['__interrupt__'][-1].value['action_requests'][-1]
-    query = action_request['args'].get('query', '')
-
-    decision = get_user_decision(query, db)
-    
     result = agent.invoke(
-        Command(resume={"decisions": [{"type": decision}]}),
+        {"messages": [HumanMessage(content=prompt)]},
         context=RuntimeContext(db=db),
         config=config,
     )
 
-print("\nSQL Agent finished!")
+    while "__interrupt__" in result:
+        action_request = result['__interrupt__'][-1].value['action_requests'][-1]
+        query = action_request['args'].get('query', '')
 
-if result and result["messages"]:
-    print("\n--- Final Result ---")
-    print(result["messages"][-1].content)
+        decision = get_user_decision(query, db)
+        
+        result = agent.invoke(
+            Command(resume={"decisions": [{"type": decision}]}),
+            context=RuntimeContext(db=db),
+            config=config,
+        )
+
+    print("\nSQL Agent finished!")
+
+    if result and result["messages"]:
+        print("\n--- Final Result ---")
+        print(result["messages"][-1].content)
+
+
+if __name__ == "__main__":
+    main()
