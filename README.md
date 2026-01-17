@@ -1,5 +1,10 @@
 # 🤖 LangChain-Agents
 
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)
+![LangChain](https://img.shields.io/badge/LangChain-1c3c3c.svg?logo=langchain&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-%2307405e.svg?logo=sqlite&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
 A collection of AI agents built with **LangChain** and **LangGraph**, implementing a **Human-in-the-Loop (HITL)** architecture. This project demonstrates how to securely integrate Large Language Models (LLMs) with external systems (Databases, Email), giving the user final control over sensitive operations.
 
 ## 🚀 Features
@@ -89,6 +94,37 @@ Rows that will be updated:
 [v] View     - Show query again
 [p] Preview  - Show impact preview again
 ```
+
+### Obsidian Agent
+
+A correcting assistant for Obsidian notes. The agent reviews a note and suggests improvements. Approval is required before applying changes.
+It can change the content of the note and also the title.
+
+```bash
+python obsidian_agent.py
+```
+
+### Interaction Example:
+
+```plaintext
+================================================================================
+CURRENT: Bananas don't contain potassium
+================================================================================
+Bananas don't contain potassium.
+================================================================================
+
+
+================================================================================
+PROPOSED: Bananas contain potassium
+================================================================================
+Bananas are a rich source of potassium, providing about 358 mg per 100 g serving.
+================================================================================
+
+Options:
+  [a] Approve  - Apply the changes
+  [r] Reject   - Skip this note and continue
+```
+
 
 ## ⚠️ Security Notice
 
