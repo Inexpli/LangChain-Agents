@@ -1,0 +1,1 @@
+SSC Tuatara has claimed the title of the world's fastest production car.

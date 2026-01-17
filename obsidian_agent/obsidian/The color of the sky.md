@@ -1,0 +1,1 @@
+The sky is typically perceived as blue during daylight due to Rayleigh scattering of sunlight.
